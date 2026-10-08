@@ -1,0 +1,28 @@
+# Xcode & Swift
+.DS_Store
+*/.DS_Store
+.build/
+Packages/
+Package.resolved
+*.xcodeproj
+*.xcworkspace
+!default.xcworkspace
+xcuserdata/
+*.xcuserdatad
+DerivedData/
+*.moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Artifacts & Temporary Files
+dist/
+build/
+*.dmg
+*.app
+*.zip
+
+# Agent & Local configs
+.gemini/
+*.log
