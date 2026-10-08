@@ -24,7 +24,7 @@ public final class CutEngine: ObservableObject {
         return cutItems.count
     }
     
-    /// Marks cut mode as active and reads current clipboard items.
+    /// Marks cut mode as active and plays distinct cut sound.
     public func activateCut() {
         self.isCutActive = true
         soundHelper.playCutSound()
@@ -45,8 +45,11 @@ public final class CutEngine: ObservableObject {
         }
     }
     
-    /// Clears cut mode explicitly (e.g. on Escape).
-    public func clear() {
+    /// Clears cut mode explicitly (e.g. on Escape) and plays subtle cancel feedback.
+    public func clear(playSound: Bool = true) {
+        if isCutActive && playSound {
+            soundHelper.playCancelSound()
+        }
         self.isCutActive = false
         self.cutItems.removeAll()
     }

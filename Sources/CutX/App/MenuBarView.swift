@@ -7,6 +7,7 @@ public struct MenuBarView: View {
     @ObservedObject var cutEngine = CutEngine.shared
     @ObservedObject var permissionManager = PermissionManager.shared
     @ObservedObject var launchHelper = LaunchAtLoginHelper.shared
+    @State private var currentTheme: SoundHelper.SoundTheme = SoundHelper.shared.currentTheme
     
     public init() {}
     
@@ -63,7 +64,7 @@ public struct MenuBarView: View {
                     }
                     
                     Button("Cancel Cut Mode (Clear)") {
-                        cutEngine.clear()
+                        cutEngine.clear(playSound: true)
                     }
                     .keyboardShortcut(.escape, modifiers: [])
                 }
@@ -82,6 +83,27 @@ public struct MenuBarView: View {
             }) {
                 Label(cutEngine.isEnabled ? "Pause CutX" : "Resume CutX",
                       systemImage: cutEngine.isEnabled ? "pause.fill" : "play.fill")
+            }
+            
+            // Sound Effects Submenu
+            Menu("🔊 Sound: \(currentTheme.rawValue)") {
+                ForEach(SoundHelper.SoundTheme.allCases) { theme in
+                    Button(action: {
+                        SoundHelper.shared.currentTheme = theme
+                        self.currentTheme = theme
+                        if theme != .muted {
+                            SoundHelper.shared.playCutSound()
+                        }
+                    }) {
+                        HStack {
+                            Text(theme.rawValue)
+                            if theme == currentTheme {
+                                Spacer()
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
             }
             
             // Launch at Login Toggle
