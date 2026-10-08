@@ -49,12 +49,14 @@ public final class ContextInspector: @unchecked Sendable {
     public func getSelectedFinderItems() -> [URL] {
         let scriptSource = """
         tell application "Finder"
-            set selectedItems to selection as alias list
-            set pathList to {}
-            repeat with anItem in selectedItems
-                set end of pathList to POSIX path of anItem
+            set sel to selection
+            set strList to ""
+            repeat with itemRef in sel
+                try
+                    set strList to strList & (POSIX path of (itemRef as alias)) & linefeed
+                end try
             end repeat
-            return pathList
+            return strList
         end tell
         """
         
@@ -69,29 +71,25 @@ public final class ContextInspector: @unchecked Sendable {
             return []
         }
         
-        var urls: [URL] = []
-        let numberOfItems = descriptor.numberOfItems
-        if numberOfItems > 0 {
-            for index in 1...numberOfItems {
-                if let itemDescriptor = descriptor.atIndex(index),
-                   let path = itemDescriptor.stringValue {
-                    urls.append(URL(fileURLWithPath: path))
-                }
-            }
-        } else if let singlePath = descriptor.stringValue {
-            urls.append(URL(fileURLWithPath: singlePath))
+        guard let outputString = descriptor.stringValue else {
+            return []
         }
         
-        return urls
+        let paths = outputString
+            .components(separatedBy: .newlines)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        
+        return paths.map { URL(fileURLWithPath: $0) }
     }
     
     /// Retrieves the active destination directory URL in Finder (front window target or Desktop).
     public func getActiveFinderTargetDirectory() -> URL? {
         let scriptSource = """
         tell application "Finder"
-            if (count of windows) > 0 and exists (front Finder window) then
+            if (count of Finder windows) > 0 and exists (front Finder window) then
                 try
-                    set targetFolder to target of front Finder window as alias
+                    set targetFolder to (target of front Finder window) as alias
                     return POSIX path of targetFolder
                 on error
                     return POSIX path of (path to desktop folder)
@@ -109,10 +107,29 @@ public final class ContextInspector: @unchecked Sendable {
         var errorDict: NSDictionary?
         let descriptor = script.executeAndReturnError(&errorDict)
         
-        if let path = descriptor.stringValue {
+        if let path = descriptor.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines), !path.isEmpty {
             return URL(fileURLWithPath: path)
         }
         
         return nil
+    }
+    
+    /// Tells Finder to refresh / update its view after file operations.
+    public func refreshFinderView() {
+        let scriptSource = """
+        tell application "Finder"
+            try
+                if (count of Finder windows) > 0 and exists (front Finder window) then
+                    update front Finder window
+                else
+                    update desktop
+                end if
+            end try
+        end tell
+        """
+        if let script = NSAppleScript(source: scriptSource) {
+            var errorDict: NSDictionary?
+            script.executeAndReturnError(&errorDict)
+        }
     }
 }

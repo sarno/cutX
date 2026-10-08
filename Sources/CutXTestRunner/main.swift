@@ -94,15 +94,18 @@ func runTests() {
 
     // MARK: - Test 4: CutEngine State Lifecycle
     let engine = CutEngine.shared
-    engine.clear()
+    engine.clear(playSound: false)
     
-    assertTest(!engine.hasItems, "CutEngine initially not in cut mode")
+    assertTest(!engine.hasItems, "CutEngine initially empty")
     
-    engine.activateCut()
-    assertTest(engine.hasItems, "CutEngine in cut mode after activateCut")
+    let sample = [URL(fileURLWithPath: "/tmp/sample1.txt"), URL(fileURLWithPath: "/tmp/sample2.txt")]
+    engine.cut(items: sample)
     
-    engine.deactivateCut(playFeedback: false)
-    assertTest(!engine.hasItems, "CutEngine not in cut mode after deactivateCut")
+    assertTest(engine.hasItems, "CutEngine has items after cut")
+    assertTest(engine.count == 2, "CutEngine count == 2")
+    
+    engine.clear(playSound: false)
+    assertTest(!engine.hasItems, "CutEngine empty after clear")
 
     print("\n📊 Results: \(passedCount) passed, \(failedCount) failed.")
 
