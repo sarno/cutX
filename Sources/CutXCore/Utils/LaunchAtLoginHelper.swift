@@ -3,17 +3,17 @@ import ServiceManagement
 
 /// Helper for managing Launch at Login on macOS 13+ using SMAppService.
 @MainActor
-final class LaunchAtLoginHelper: ObservableObject {
-    static let shared = LaunchAtLoginHelper()
+public final class LaunchAtLoginHelper: ObservableObject {
+    public static let shared = LaunchAtLoginHelper()
     
-    @Published var isEnabled: Bool = false
+    @Published public var isEnabled: Bool = false
     
     private init() {
         checkStatus()
     }
     
     /// Checks the current login item status.
-    func checkStatus() {
+    public func checkStatus() {
         if #available(macOS 13.0, *) {
             let status = SMAppService.mainApp.status
             self.isEnabled = (status == .enabled)
@@ -21,7 +21,7 @@ final class LaunchAtLoginHelper: ObservableObject {
     }
     
     /// Toggles launch at login on/off.
-    func toggle() {
+    public func toggle() {
         if #available(macOS 13.0, *) {
             do {
                 if isEnabled {
@@ -32,7 +32,6 @@ final class LaunchAtLoginHelper: ObservableObject {
                     self.isEnabled = true
                 }
             } catch {
-                // Fallback / log
                 checkStatus()
             }
         }

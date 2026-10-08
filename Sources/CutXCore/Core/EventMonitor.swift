@@ -2,8 +2,8 @@ import Cocoa
 import CoreGraphics
 
 /// Intercepts keyboard events for Cmd+X, Cmd+V, and Escape when Finder is active.
-final class EventMonitor: @unchecked Sendable {
-    static let shared = EventMonitor()
+public final class EventMonitor: @unchecked Sendable {
+    public static let shared = EventMonitor()
     
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
@@ -12,12 +12,11 @@ final class EventMonitor: @unchecked Sendable {
     private init() {}
     
     /// Starts the global event tap listener.
-    func start() {
+    public func start() {
         guard eventTap == nil else { return }
         
         let eventMask = (1 << CGEventType.keyDown.rawValue)
         
-        // Create an event tap at the annotated session level
         guard let tap = CGEvent.tapCreate(
             tap: .cgAnnotatedSessionEventTap,
             place: .headInsertEventTap,
@@ -43,7 +42,7 @@ final class EventMonitor: @unchecked Sendable {
     }
     
     /// Stops the event tap listener.
-    func stop() {
+    public func stop() {
         if let tap = eventTap {
             CGEvent.tapEnable(tap: tap, enable: false)
             if let source = runLoopSource {
@@ -56,7 +55,6 @@ final class EventMonitor: @unchecked Sendable {
     
     /// Handles intercepted keyboard events.
     private func handleEvent(proxy: CGEventTapProxy, type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
-        // Automatically re-enable tap if macOS disabled it due to timeout
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
             if let tap = eventTap {
                 CGEvent.tapEnable(tap: tap, enable: true)
@@ -68,12 +66,10 @@ final class EventMonitor: @unchecked Sendable {
             return Unmanaged.passRetained(event)
         }
         
-        // 1. Filter: Only handle when Finder is frontmost
         guard contextInspector.isFinderFrontmost() else {
             return Unmanaged.passRetained(event)
         }
         
-        // 2. Read keycode and modifier flags
         let keycode = event.getIntegerValueField(.keyboardEventKeycode)
         let flags = event.flags
         let isCmdDown = flags.contains(.maskCommand)
@@ -81,14 +77,9 @@ final class EventMonitor: @unchecked Sendable {
         let isControlDown = flags.contains(.maskControl)
         let isShiftDown = flags.contains(.maskShift)
         
-        // Pure Command key modifier (without Option, Control, Shift)
         let isPureCmd = isCmdDown && !isOptionDown && !isControlDown && !isShiftDown
         
-        // Keycode 7 = 'X'
-        // Keycode 9 = 'V'
-        // Keycode 53 = 'Escape'
-        
-        // 3. Handle Escape: Clear cut buffer if active
+        // Escape to clear
         if keycode == 53 && !isCmdDown {
             Task { @MainActor in
                 if CutEngine.shared.hasItems {
@@ -102,24 +93,23 @@ final class EventMonitor: @unchecked Sendable {
             return Unmanaged.passRetained(event)
         }
         
-        // Check if user is typing in a text field (e.g. renaming file)
+        // Check text field focus
         if contextInspector.isTextInputFocused() {
             return Unmanaged.passRetained(event)
         }
         
-        // 4. Handle Cmd + X (Cut)
+        // Cmd + X
         if keycode == 7 {
             let selectedURLs = contextInspector.getSelectedFinderItems()
             if !selectedURLs.isEmpty {
                 Task { @MainActor in
                     CutEngine.shared.cut(items: selectedURLs)
                 }
-                // Return nil to consume the event and suppress Finder's error beep
                 return nil
             }
         }
         
-        // 5. Handle Cmd + V (Paste & Move)
+        // Cmd + V
         if keycode == 9 {
             var hasCutBuffer = false
             if Thread.isMainThread {

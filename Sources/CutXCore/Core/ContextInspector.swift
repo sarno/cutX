@@ -2,18 +2,18 @@ import Cocoa
 import ApplicationServices
 
 /// Inspects the current macOS UI context, active Finder selections, and focus elements.
-final class ContextInspector: @unchecked Sendable {
-    static let shared = ContextInspector()
+public final class ContextInspector: @unchecked Sendable {
+    public static let shared = ContextInspector()
     
     private init() {}
     
     /// Checks if the frontmost active application is Apple Finder.
-    func isFinderFrontmost() -> Bool {
+    public func isFinderFrontmost() -> Bool {
         return NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.finder"
     }
     
     /// Checks if the currently focused UI element is a text input field (e.g. user is renaming a file).
-    func isTextInputFocused() -> Bool {
+    public func isTextInputFocused() -> Bool {
         let systemWide = AXUIElementCreateSystemWide()
         var focusedAppValue: AnyObject?
         
@@ -31,7 +31,6 @@ final class ContextInspector: @unchecked Sendable {
         var roleValue: AnyObject?
         if AXUIElementCopyAttributeValue(focusedElement as! AXUIElement, kAXRoleAttribute as CFString, &roleValue) == .success,
            let role = roleValue as? String {
-            // Check for common text input element roles
             let textRoles: Set<String> = [
                 "AXTextField",
                 "AXTextArea",
@@ -47,7 +46,7 @@ final class ContextInspector: @unchecked Sendable {
     }
     
     /// Retrieves the list of currently selected file and folder URLs in Finder.
-    func getSelectedFinderItems() -> [URL] {
+    public func getSelectedFinderItems() -> [URL] {
         let scriptSource = """
         tell application "Finder"
             set selectedItems to selection as alias list
@@ -87,7 +86,7 @@ final class ContextInspector: @unchecked Sendable {
     }
     
     /// Retrieves the active destination directory URL in Finder (front window target or Desktop).
-    func getActiveFinderTargetDirectory() -> URL? {
+    public func getActiveFinderTargetDirectory() -> URL? {
         let scriptSource = """
         tell application "Finder"
             if (count of windows) > 0 and exists (front Finder window) then

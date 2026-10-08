@@ -22,5 +22,8 @@ jobs:
       - name: Build CutX (Debug)
         run: swift build -v
 
+      - name: Run Automated Verification Suite
+        run: swift run CutXTestRunner
+
       - name: Build CutX (Release)
         run: swift build -c release -v

@@ -3,10 +3,10 @@ import ApplicationServices
 
 /// Manages macOS Accessibility permissions required for event tapping and UI introspection.
 @MainActor
-final class PermissionManager: ObservableObject {
-    static let shared = PermissionManager()
+public final class PermissionManager: ObservableObject {
+    public static let shared = PermissionManager()
     
-    @Published var isAccessibilityGranted: Bool = false
+    @Published public var isAccessibilityGranted: Bool = false
     
     private init() {
         checkPermission()
@@ -14,14 +14,14 @@ final class PermissionManager: ObservableObject {
     
     /// Checks whether the application has accessibility trust.
     @discardableResult
-    func checkPermission() -> Bool {
+    public func checkPermission() -> Bool {
         let trusted = AXIsProcessTrusted()
         self.isAccessibilityGranted = trusted
         return trusted
     }
     
     /// Requests accessibility permission and optionally prompts the system dialog.
-    func requestPermission() {
+    public func requestPermission() {
         let key = "AXTrustedCheckOptionPrompt" as CFString
         let options = [key: true] as CFDictionary
         let trusted = AXIsProcessTrustedWithOptions(options)
@@ -33,7 +33,7 @@ final class PermissionManager: ObservableObject {
     }
     
     /// Opens the macOS System Settings Accessibility pane directly.
-    func openAccessibilitySettings() {
+    public func openAccessibilitySettings() {
         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
             NSWorkspace.shared.open(url)
         }

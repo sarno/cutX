@@ -11,19 +11,28 @@ let package = Package(
         .executable(
             name: "CutX",
             targets: ["CutX"]
+        ),
+        .library(
+            name: "CutXCore",
+            targets: ["CutXCore"]
         )
     ],
     dependencies: [],
     targets: [
+        .target(
+            name: "CutXCore",
+            dependencies: [],
+            path: "Sources/CutXCore"
+        ),
         .executableTarget(
             name: "CutX",
-            dependencies: [],
+            dependencies: ["CutXCore"],
             path: "Sources/CutX"
         ),
-        .testTarget(
-            name: "CutXTests",
-            dependencies: ["CutX"],
-            path: "Tests/CutXTests"
+        .executableTarget(
+            name: "CutXTestRunner",
+            dependencies: ["CutXCore"],
+            path: "Sources/CutXTestRunner"
         )
     ]
 )

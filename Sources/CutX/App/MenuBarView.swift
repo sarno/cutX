@@ -1,13 +1,16 @@
 import SwiftUI
 import AppKit
+import CutXCore
 
 /// Menu Bar dropdown UI for CutX.
-struct MenuBarView: View {
+public struct MenuBarView: View {
     @ObservedObject var cutEngine = CutEngine.shared
     @ObservedObject var permissionManager = PermissionManager.shared
     @ObservedObject var launchHelper = LaunchAtLoginHelper.shared
     
-    var body: some View {
+    public init() {}
+    
+    public var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             // App Header & Status
             HStack {

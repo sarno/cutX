@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import CutXCore
 
 @main
 struct CutXApp: App {
@@ -7,7 +8,6 @@ struct CutXApp: App {
     @StateObject private var cutEngine = CutEngine.shared
     
     init() {
-        // Automatically check accessibility and start monitor if trusted
         if PermissionManager.shared.checkPermission() {
             EventMonitor.shared.start()
         }
