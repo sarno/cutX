@@ -96,16 +96,13 @@ func runTests() {
     let engine = CutEngine.shared
     engine.clear()
     
-    assertTest(!engine.hasItems, "CutEngine initially empty")
+    assertTest(!engine.hasItems, "CutEngine initially not in cut mode")
     
-    let sample = [URL(fileURLWithPath: "/tmp/sample1.txt"), URL(fileURLWithPath: "/tmp/sample2.txt")]
-    engine.cut(items: sample)
+    engine.activateCut()
+    assertTest(engine.hasItems, "CutEngine in cut mode after activateCut")
     
-    assertTest(engine.hasItems, "CutEngine has items after cut")
-    assertTest(engine.count == 2, "CutEngine count == 2")
-    
-    engine.clear()
-    assertTest(!engine.hasItems, "CutEngine empty after clear")
+    engine.deactivateCut(playFeedback: false)
+    assertTest(!engine.hasItems, "CutEngine not in cut mode after deactivateCut")
 
     print("\n📊 Results: \(passedCount) passed, \(failedCount) failed.")
 

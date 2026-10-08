@@ -1,23 +1,22 @@
 import Cocoa
 import Combine
 
-/// Manages the state of currently cut items and orchestrates the cut & paste lifecycle.
+/// Manages the state of Cut mode and clipboard buffer.
 @MainActor
 public final class CutEngine: ObservableObject {
     public static let shared = CutEngine()
     
+    @Published public private(set) var isCutActive: Bool = false
     @Published public private(set) var cutItems: [URL] = []
-    @Published public private(set) var isBusy: Bool = false
     @Published public var isEnabled: Bool = true
     
-    private let fileSystemWorker = FileSystemWorker.shared
     private let soundHelper = SoundHelper.shared
     
     private init() {}
     
-    /// Returns true if there are items currently in the cut buffer.
+    /// Returns true if cut mode is currently active.
     public var hasItems: Bool {
-        return !cutItems.isEmpty
+        return isCutActive
     }
     
     /// Number of items in cut buffer.
@@ -25,33 +24,38 @@ public final class CutEngine: ObservableObject {
         return cutItems.count
     }
     
-    /// Stores the selected URLs into the cut buffer.
-    public func cut(items: [URL]) {
-        guard !items.isEmpty else { return }
-        self.cutItems = items
+    /// Marks cut mode as active and reads current clipboard items.
+    public func activateCut() {
+        self.isCutActive = true
         soundHelper.playCutSound()
-    }
-    
-    /// Executes the move operation from cut buffer to the target directory.
-    public func paste(into targetDirectory: URL) async {
-        guard hasItems, !isBusy else { return }
         
-        isBusy = true
-        let itemsToMove = self.cutItems
-        
-        do {
-            try fileSystemWorker.moveItems(itemsToMove, to: targetDirectory)
-            self.cutItems.removeAll()
-            soundHelper.playPasteSound()
-        } catch {
-            soundHelper.playErrorSound()
+        // Refresh cut items from clipboard after brief delay to allow Cmd+C to populate
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
+            self.refreshCutItemsFromClipboard()
         }
-        
-        isBusy = false
     }
     
-    /// Clears the current cut buffer.
-    public func clear() {
+    /// Deactivates cut mode (after move or when new copy occurs).
+    public func deactivateCut(playFeedback: Bool = false) {
+        self.isCutActive = false
         self.cutItems.removeAll()
+        if playFeedback {
+            soundHelper.playPasteSound()
+        }
+    }
+    
+    /// Clears cut mode explicitly (e.g. on Escape).
+    public func clear() {
+        self.isCutActive = false
+        self.cutItems.removeAll()
+    }
+    
+    /// Reads file URLs from system pasteboard.
+    public func refreshCutItemsFromClipboard() {
+        guard let pasteboard = NSPasteboard.general.readObjects(forClasses: [NSURL.self], options: nil) as? [URL] else {
+            return
+        }
+        self.cutItems = pasteboard
     }
 }

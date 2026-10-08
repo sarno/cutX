@@ -49,24 +49,20 @@ public struct MenuBarView: View {
             // Cut Buffer Status
             if cutEngine.hasItems {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("📋 Items Ready to Move (\(cutEngine.count)):")
+                    Text("📋 Cut Mode Active (Ready to Move):")
                         .font(.caption)
                         .fontWeight(.semibold)
                     
-                    ForEach(cutEngine.cutItems.prefix(5), id: \.self) { url in
-                        Text("• \(url.lastPathComponent)")
-                            .font(.caption2)
-                            .lineLimit(1)
-                            .foregroundColor(.secondary)
+                    if !cutEngine.cutItems.isEmpty {
+                        ForEach(cutEngine.cutItems.prefix(5), id: \.self) { url in
+                            Text("• \(url.lastPathComponent)")
+                                .font(.caption2)
+                                .lineLimit(1)
+                                .foregroundColor(.secondary)
+                        }
                     }
                     
-                    if cutEngine.count > 5 {
-                        Text("... and \(cutEngine.count - 5) more")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Button("Cancel Cut (Clear Buffer)") {
+                    Button("Cancel Cut Mode (Clear)") {
                         cutEngine.clear()
                     }
                     .keyboardShortcut(.escape, modifiers: [])
