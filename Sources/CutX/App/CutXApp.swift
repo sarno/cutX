@@ -3,22 +3,41 @@ import AppKit
 
 @main
 struct CutXApp: App {
-    // We can use SwiftUI's modern MenuBarExtra for the Menu Bar interface
+    @StateObject private var permissionManager = PermissionManager.shared
+    @StateObject private var cutEngine = CutEngine.shared
+    
+    init() {
+        // Check permission and start event tap
+        if PermissionManager.shared.checkPermission() {
+            EventMonitor.shared.start()
+        }
+    }
+    
     var body: some Scene {
-        MenuBarExtra("CutX", systemImage: "scissors") {
-            VStack {
-                Text("CutX — Ready")
-                    .font(.headline)
-                    .padding(.bottom, 4)
+        MenuBarExtra("CutX", systemImage: cutEngine.hasItems ? "scissors.badge.ellipsis" : "scissors") {
+            VStack(alignment: .leading, spacing: 6) {
+                if !permissionManager.isAccessibilityGranted {
+                    Button("⚠️ Grant Accessibility Permission") {
+                        permissionManager.requestPermission()
+                    }
+                    Divider()
+                }
                 
-                Divider()
+                if cutEngine.hasItems {
+                    Text("✂️ \(cutEngine.count) item(s) in cut buffer")
+                        .font(.caption)
+                    
+                    Button("Clear Cut Buffer") {
+                        cutEngine.clear()
+                    }
+                    Divider()
+                }
                 
                 Button("Quit CutX") {
                     NSApplication.shared.terminate(nil)
                 }
                 .keyboardShortcut("q", modifiers: .command)
             }
-            .padding(8)
         }
         .menuBarExtraStyle(.menu)
     }
