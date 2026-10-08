@@ -10,6 +10,8 @@
     <string>CutX</string>
     <key>CFBundleExecutable</key>
     <string>CutX</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleVersion</key>
     <string>1.0.0</string>
     <key>CFBundleShortVersionString</key>
@@ -18,12 +20,10 @@
     <string>APPL</string>
     <key>LSMinimumSystemVersion</key>
     <string>13.0</string>
-    <!-- LSUIElement = true tells macOS not to show an icon in the Dock -->
     <key>LSUIElement</key>
     <true/>
     <key>NSHumanReadableCopyright</key>
     <string>Copyright © 2026 sarno. All rights reserved.</string>
-    <!-- Privacy description for AppleEvents / Finder automation -->
     <key>NSAppleEventsUsageDescription</key>
     <string>CutX requires access to Finder to read selected file paths and move items on Cut &amp; Paste.</string>
 </dict>

@@ -32,6 +32,11 @@ if [ -f "Resources/Info.plist" ]; then
     cp "Resources/Info.plist" "${CONTENTS_DIR}/Info.plist"
 fi
 
+# Copy AppIcon.icns if available
+if [ -f "Resources/AppIcon.icns" ]; then
+    cp "Resources/AppIcon.icns" "${RESOURCES_DIR}/AppIcon.icns"
+fi
+
 # Ad-hoc code signing for local execution
 echo "🔏 Signing App bundle..."
 codesign --force --deep --sign - "${APP_BUNDLE}"
