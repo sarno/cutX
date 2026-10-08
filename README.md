@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./docs/cutx_banner.jpg" alt="CutX Banner" width="100%" style="border-radius: 12px; margin-bottom: 16px;" />
+
 # ✂️ CutX
 ### Windows-Style Cut & Paste (`Cmd + X` ➔ `Cmd + V`) for macOS Finder
 
